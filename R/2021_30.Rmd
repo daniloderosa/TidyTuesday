@@ -1,0 +1,73 @@
+---
+title: "Untitled"
+author: "Danilo De Rosa"
+date: "7/22/2021"
+output:
+    html_document:
+        fig_retina: 1
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+```
+
+```{r}
+library(tidyverse)
+library(ggtext)
+library(showtext)
+
+font_add_google("Montserrat", "Montserrat")
+font_add_google("Roboto Condensed", "Roboto Condensed")
+font_add_google("Playfair Display", "Playfair")
+showtext_auto()
+
+
+# Data download from the US Drought monitor site, here (https://droughtmonitor.unl.edu/DmData/DataDownload/ComprehensiveStatistics.aspx)
+# options set: 'Spatial scale: geographical region, Pacific', 'Statistics Category: percent area', 'Statistics Type: categorical'
+drought <- read_csv(file = "droughts_2.csv")
+```
+
+```{r}
+
+drought_longer <- drought %>% 
+  pivot_longer(cols = None:D4, names_to = "drought_lvl", values_to = "area_pct") %>% 
+  select(-MapDate, -StatisticFormatID) %>% 
+  mutate(drought_lvl =factor(drought_lvl, levels = c("D4", "D3", "D2", "D1", "D0", "None")))
+
+levels(drought_longer$drought_lvl) <- c("Exceptional drought", "Extreme", "Severe", "Moderate", "Abnormally dry", "None")
+```
+
+```{r fig.height=6, fig.width=10, fig.showtext=TRUE}
+drought_longer %>% 
+  filter(drought_lvl != "None") %>% 
+  ggplot(aes(ValidEnd, area_pct/100, fill = fct_rev(drought_lvl))) +
+  geom_area() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), expand = c(0,0.01)) +
+  scale_x_date(limits = c(min(drought_longer$ValidEnd), "2023-09-26"), expand = c(0.005,0)) +
+  scale_fill_manual(values = c("#fed976", "#fcae91", "#fb6a4a","#de2d26", "#a50f15")) +
+  theme_minimal(base_family = "Roboto Condensed") +
+  theme(legend.position = "none",
+        plot.background = element_rect(fill = "#ede9e8"),
+        panel.grid = element_line(color = "#cfcccc"),
+        panel.grid.minor = element_blank(),
+        plot.subtitle = element_markdown(),
+        plot.title = element_text(family = "Playfair", size = rel(2), face = "bold", margin = margin(b = 20)), 
+        plot.caption = element_markdown(size = rel(.7), margin = margin(t = -5), hjust = 1),
+        plot.margin = margin(20, 100, 20, 10),
+        plot.caption.position = "plot") +
+  labs(fill = "",
+       x = "",
+       y = "", 
+       title = "Percent of USA's western land in drought conditions",
+       subtitle = "<b style='color: #a50f15'>EXCEPTIONAL DROUGHT</b> &bull; <b style='color: #de2d26'>EXTREME</b> &bull; <b style='color: #fb6a4a'>SEVERE</b> &bull; <b style='color: #fcae91'>MODERATE</b> &bull; <b style='color: #fed976'>ABNORMALLY DRY</b>", 
+       caption = "Data: US Drought Monitor &bull; Chart: Danilo De Rosa &bull; TidyTuesday 2021/30") +
+  geom_textbox(
+    data = tibble(x = as.Date("2023-09-24"), y = .17, label = "<b style='font-family:anton;font-size:14pt;color:darkgrey'><i>July 2021</i></b><br><p style='color:darkgrey;font-size:8pt;line-height:10px'><b>28% of western land is suffering an <i style='color:#de2d26;'>exceptional drought</i></b></p>"),
+    aes(x, y, label = label),
+    fill = "cornsilk", box.color = "cornsilk3",
+    width = unit(7, "lines"), height = unit(4.5,"lines")
+  ) +
+  coord_cartesian(clip = "off")
+
+ggsave("droughts.pdf", width = 10, height = 6, device = cairo_pdf)
+```
