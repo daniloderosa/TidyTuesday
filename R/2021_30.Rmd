@@ -69,5 +69,10 @@ drought_longer %>%
   ) +
   coord_cartesian(clip = "off")
 
-ggsave("droughts.pdf", width = 10, height = 6, device = cairo_pdf)
+# ggsave("droughts.pdf", width = 10, height = 6, device = cairo_pdf)
+path <- here::here("plots", "2021_30", "2021_30_Droughts")
+ggsave(glue::glue("{path}.pdf"), width = 10, height = 6, device = cairo_pdf)
+pdftools::pdf_convert(pdf = glue::glue("{path}.pdf"), 
+                      filenames = glue::glue("{path}.png"),
+                      format = "png", dpi = 450)
 ```
