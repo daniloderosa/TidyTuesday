@@ -1,0 +1,162 @@
+---
+title: "Untitled"
+author: "Danilo De Rosa"
+date: "7/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r prep}
+library(tidyverse)
+library(ggtext)
+library(ggrepel)
+library(patchwork)
+library(systemfonts)
+
+theme_set(theme_minimal(base_family = "Avenir Next Condensed"))
+
+theme_update(plot.margin = margin(20, 35, 35, 20))
+```
+
+```{r data}
+olympics <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv')
+```
+
+```{r prep}
+olympics_medal <- olympics %>% 
+  filter(!is.na(medal))
+
+olympics_medal$noc[olympics_medal$noc == "URS"] <- "RUS"
+
+olympics_medal_total <- olympics_medal %>% 
+  count(noc, sort = T) %>%
+  mutate(rank = min_rank(-n)) %>% 
+  filter(rank <= 10)
+
+olympics_gold <- olympics_medal %>% 
+  inner_join(olympics_medal_total, by = "noc") %>% 
+  filter(medal == "Gold") %>% 
+  count(noc, sort = T) %>% 
+  mutate(rank = min_rank(-n)) %>% 
+  filter(rank <= 10)
+```
+
+
+```{r plot}
+olympics_medal_total %>% 
+  ggplot() +
+  geom_col(aes(fct_reorder(noc, -n), n), fill = "grey30", width = .85) +
+  geom_col(data = olympics_gold, aes(x = noc, y = n), fill = "#DAA520", width = .5) +
+  geom_text(data = olympics_medal_total %>% mutate(lab = ifelse(noc %in% c("USA", "HUN"), paste0(n, " \nMedals"),n)), aes(fct_reorder(noc, -n), n, label = lab), size = 4.3, lineheight = .8, 
+      nudge_y = 50, vjust = 0, color = "grey12", fontface = "bold") +
+  geom_text(data = olympics_gold %>% mutate(lab = ifelse(noc %in% c("USA", "HUN"), paste0(n, " \nGolds"),n)), aes(noc, n, label = lab), size = 4.3, lineheight = .8, 
+      nudge_y = 50, vjust = 0, color = "#DAA520", fontface = "bold") +
+  geom_text(data = olympics_medal_total, aes(x = noc, y = -100, label = noc), size = 6, hjust = .5, vjust = 1, color = "grey30") +
+  coord_cartesian(clip = "off") +
+    scale_y_continuous(limits = c(-100, NA)) +
+  labs(x = "", y = "") +
+  theme_minimal() + 
+  theme(axis.text = element_blank(),
+        panel.grid = element_blank())
+```
+
+
+```{r plot, warning=FALSE}
+
+olympics_sex <- olympics %>%  
+  filter(season == "Summer") %>% 
+  count(year, sex) %>% 
+  pivot_wider(names_from = sex, values_from = n) 
+
+olympics_sex$F[olympics_sex$year == 1896] <- 0
+
+olympics_sex <- olympics_sex %>% 
+  group_by(year) %>% 
+  mutate(total = sum(M, F, na.rm = T),
+         half = total/2,
+         label_f = case_when(
+           year == 1896 ~ paste0(round((F/total)*100), "% women"),
+           TRUE ~ paste0(round((F/total)*100), "%"))) %>% 
+  ungroup() %>% 
+  mutate(label_ext = case_when(
+           year == 1896 ~ paste0("| ", total, " total athletes"),
+           year != 2016 ~ paste0(total),
+           year == 2016 ~ paste0(total, " total athletes")))
+
+olympics_2016 <- olympics_sex %>% 
+  mutate(note = "\n\n<-- 50% women, 50% men") %>% 
+  filter(year == 2016)
+
+p1 <- olympics_sex %>% 
+  ggplot(aes(fct_rev(as.factor(year)), total)) + 
+  geom_col(fill = "grey30", width = .85) +
+  geom_col(aes(x = fct_rev(as.factor(year)), y = F), fill = "#ff6547", width = .35) +
+  geom_errorbar(aes(ymin = half, ymax = half), color = "grey70") +
+  geom_text(data = olympics_sex %>% filter(year != 1896), aes(y = F, label = label_f), nudge_y = 250, color = "#ff6547", family = "Avenir Next Condensed") +
+  geom_text(data = olympics_sex %>% filter(year == 1896), aes(y = F, label = label_f), nudge_y = 950, color = "#ff6547", family = "Avenir Next Condensed", fontface = "bold") +
+  geom_text(aes(y = -500, label = fct_rev(as.factor(year))), size = 5, hjust = .5, color = "grey30", family = "Avenir Next Condensed") + 
+  geom_text(data = olympics_sex %>% filter(year == 1896), aes(label = label_ext), nudge_y = 2050, hjust = .5, fontface = "bold", family = "Avenir Next Condensed")  +
+  geom_text(data = olympics_sex %>% filter(year != 1896 & year != 2016), aes(label = label_ext), nudge_y = 320, hjust = .5, fontface = "bold", family = "Avenir Next Condensed")  +
+  geom_text(data = olympics_sex %>% filter(year == 2016), aes(label = label_ext), nudge_y = 1000, hjust = .5, fontface = "bold", family = "Avenir Next Condensed")  +
+  geom_text(data = olympics_2016, aes(x = 2.05, y = half, label = note), color = "grey70", nudge_x = -.4, nudge_y = 1150, family = "Avenir Next Condensed") +
+  coord_flip(clip = "off") +
+  theme_minimal(base_family = "Avenir Next Condensed") + 
+  theme(panel.grid = element_blank(),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        plot.title = element_markdown(size = rel(2.5), face = "bold", margin = margin(0, 0, 20, 90), hjust = 0),
+        plot.caption = element_markdown()) +
+  labs(title = "More <span style='color:#ff6547'>women</span> than ever are participating and winning at the summer Olympics")
+
+olympics_sex_medals <- olympics %>% 
+  filter(season == "Summer" & !is.na(medal)) %>% 
+  count(year, sex, medal) 
+
+year <- c(rep(1896, 3))
+sex <- c(rep("F", 3))
+medal <- c("Bronze", "Gold", "Silver")
+n <- c(rep(0, 3))
+data <- data.frame(year, sex, medal, n)
+
+olympics_sex_medals <- rbind(data, olympics_sex_medals)
+
+olympics_sex_medals <- olympics_sex_medals %>% 
+  group_by(year) %>% 
+  mutate(total_medals = sum(n)) %>% 
+  ungroup() %>% 
+  group_by(year, medal) %>% 
+  mutate(total_each_medal = sum(n), 
+         percent = round((n/total_each_medal)*100),
+         lab = paste0(percent, "%"))
+
+p2 <- olympics_sex_medals %>% 
+  filter(sex == "F") %>% 
+  ggplot(aes(fct_relevel(medal, "Bronze", after = 2), fct_rev(as.factor(year)))) +
+  geom_point(aes(size = percent, color = medal)) +
+  geom_text(aes(label = lab, color = medal), nudge_x = .45, family = "Avenir Next Condensed", size = rel(5)) +
+  geom_curve(aes(x = 0.85, xend = -0.5, y = 25, yend = 23), curvature = .4, color = "grey30") +
+  annotate("text", x = -0.5, y = 22.25, label = "% of medals \nwon by women") +
+  coord_cartesian(clip = "off") +
+  scale_color_manual(values = c("#cd7f32", "#DAA520", "#c0c0c0")) +
+  theme_minimal(base_family = "Avenir Next Condensed") +
+  theme(panel.grid = element_blank(),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        legend.position = "",
+        plot.caption = element_markdown(size = rel(1))) +
+  labs(caption = "Data: Kaggle &bull; TidyTuesday 2021/31")
+
+
+p1 + p2 + plot_layout(widths = c(1, .3))
+
+path <- here::here("plots", "2021_31", "2021_OlympicMedals")
+ggsave(glue::glue("{path}.pdf"), width = 15, height = 12, device = cairo_pdf)
+pdftools::pdf_convert(pdf = glue::glue("{path}.pdf"), 
+                      filenames = glue::glue("{path}.png"),
+                      format = "png", dpi = 450)
+
+```
+
