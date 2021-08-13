@@ -2,13 +2,11 @@
 title: "2021_32"
 author: "Danilo De Rosa"
 date: "8/10/2021"
-output:
-    html_document:
-        fig_retina: 1
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.retina = 1)
 ```
 
 
