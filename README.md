@@ -16,6 +16,12 @@ Feedback is very welcome via [Twitter](https://twitter.com/DaniloDeRosa96) or [m
 
 ***
 
+### 2021/33 [(code)](https://github.com/daniloderosa/TidyTuesday/blob/main/R/2021_33.Rmd)&nbsp;💵 BEA Infrastructure Investments by [BEA](https://www.bea.gov/system/files/papers/BEA-WP2020-12.pdf)
+
+![./plots/2021_33//2021_BEAInfrastructureInvestments.png](https://raw.githubusercontent.com/daniloderosa/TidyTuesday/main/plots/2021_33/2021_BEAInfrastructureInvestments.png)
+
+***
+
 ### 2021/32 [(code)](https://github.com/daniloderosa/TidyTuesday/blob/main/R/2021_32.Rmd)&nbsp;🏅 Paralympics Medal by [IPC](https://www.paralympic.org/feature/1964-1988-it-was-all-about-zipora-rubin-rosenbaum-s-dominance)
 
 ![./plots/2021_32//2021_ParalympicMedals.png](https://raw.githubusercontent.com/daniloderosa/TidyTuesday/main/plots/2021_32/2021_ParalympicMedals.png)
