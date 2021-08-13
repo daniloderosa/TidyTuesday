@@ -153,8 +153,8 @@ plot2 <- digital %>%
 
 
 ```{r}
-plot1 + plot2 + patchwork::plot_layout(widths = c(2, .5)) + patchwork::plot_annotation(title = "US Investments goes <span style='color:#A034F0'>digital</span>", theme = theme(
-  plot.background = element_rect(fill = "grey90", color = "grey90"),
+plot1 + plot2 + patchwork::plot_layout(widths = c(2, .5)) + patchwork::plot_annotation(title = "US Investments go <span style='color:#A034F0'>digital</span>", theme = theme(
+  plot.background = element_rect(fill = "grey95", color = "grey95"),
   plot.title = element_markdown(hjust = .5, family = "anton", size = rel(5),
                                 margin = margin(30, 0, 30, 0))))
 
