@@ -1,0 +1,146 @@
+---
+title: "2021_35"
+author: "Danilo De Rosa"
+date: "9/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+```{r load-libraries-data}
+library(tidyverse)
+library(ggtext)
+library(showtext)
+library(ggdist)
+
+lemurs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-24/lemur_data.csv')
+
+font_add_google("Fredoka One", "fred")
+showtext_auto()
+```
+
+```{r prep-data}
+lemurs_unique <- lemurs %>% distinct(dlc_id, .keep_all = T) 
+
+lemurs_clean <- lemurs_unique %>% 
+  select(dlc_id, sex, birth_type, age_at_death_y) %>% 
+  drop_na(age_at_death_y) %>% 
+  filter(birth_type %in% c("CB", "WB"),
+         sex %in% c("M", "F")) %>% 
+  mutate(sex = case_when(
+           sex == "M" ~ "Male",
+           sex == "F" ~ "Female"),
+         birth_type = case_when(
+           birth_type == "CB" ~ "captivity",
+           birth_type == "WB" ~ "the wild"
+         ),
+         label = paste(sex, "born\nin", birth_type))
+
+lemurs_clean$label = factor(lemurs_clean$label, levels = c("Male born\nin captivity",
+                                                           "Female born\nin captivity",
+                                                           "Male born\nin the wild",
+                                                           "Female born\nin the wild"))
+
+lemurs_clean %>% 
+  ggplot(aes(age_at_death_y, label, fill = label)) +
+  ggdist::stat_halfeye(
+    adjust = .5, 
+    height = .6,
+    .width = 0, 
+    justification = -.3,
+    point_color = 'NA') + 
+  geom_boxplot(
+    aes(color = label),
+    width = .25, 
+    outlier.shape = NA,
+    alpha = .25
+  ) +
+  geom_point(
+    aes(color = label),
+    size = 1.5,
+    alpha = .25,
+    position = position_jitter(
+      seed = 1, height = .1
+    )
+  ) +
+  geom_text(
+    data = lemurs_clean %>% 
+      group_by(label) %>% 
+      summarise(n = n(), max = max(age_at_death_y)),
+    aes(y = label, 
+        x = max, 
+        label = glue::glue("n = {n}"),
+        color = label),
+    nudge_x = 1.25,
+    inherit.aes = F,
+    fontface = "bold",
+    family = "fred"
+  ) +
+  geom_text(
+    data = lemurs_clean %>% 
+      group_by(label) %>% 
+      summarise(median = round(median(age_at_death_y), 2)),
+    aes(y = label, 
+        x = median, 
+        label = glue::glue("median = {median}"),
+        ),
+    nudge_y = +.25,
+    color = "white",
+    inherit.aes = F,
+    family = "fred"
+  ) +
+  scale_fill_manual(values = c("#A0817E",
+                               "#755857",
+                               "#6F8C2C",
+                               "#A9C445"),
+                    breaks = c("Female born\nin the wild",
+                               "Male born\nin the wild",
+                               "Female born\nin captivity",
+                               "Male born\nin captivity")) +
+  scale_color_manual(values = c("#A0817E",
+                               "#755857",
+                               "#6F8C2C",
+                               "#A9C445"),
+                    breaks = c("Female born\nin the wild",
+                               "Male born\nin the wild",
+                               "Female born\nin captivity",
+                               "Male born\nin captivity")) +
+  coord_cartesian(clip = "off", ylim = c(1.25, NA)) +
+  scale_x_continuous(limits = c(NA, 42)) +
+  labs(x = "**Age at death**", 
+       y = "",
+       title = "Life expectancy of lemurs at the Duke Lemur Center (Durham, NC)",
+       caption = "Data: Kaggle &bull; TidyTuesday 2021/35") +
+  theme_minimal(base_family = "fred") +
+  theme(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        axis.text.x = element_text(margin = margin(b = 10),
+                                   size = rel(2)),
+        axis.text.y = element_text(color = c("#A9C445",
+                               "#6F8C2C",
+                               "#755857",
+                               "#A0817E"),
+                               size = rel(2),
+                               vjust = -.5,
+                               hjust = 1, 
+                               face = "bold"),
+        axis.title.x = element_markdown(size = rel(1.65)),
+        plot.title = element_markdown(size = rel(2.5), face = "bold", hjust = .5,
+                                      margin = margin(r = 65, b = 20)),
+        plot.caption = element_markdown(size = rel(1.25)),
+        plot.margin = margin(25, 15, 25, 15),
+        plot.background = element_rect(fill = "grey90"))
+
+
+path <- here::here("plots", "2021_35", "2021_Lemurs")
+ggsave(filename = glue::glue("{path}.pdf"), width = 14, height = 10, device = cairo_pdf)
+pdftools::pdf_convert(pdf = glue::glue("{path}.pdf"), 
+                      filenames = glue::glue("{path}.png"),
+                      format = "png", dpi = 300)
+
+```
+
