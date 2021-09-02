@@ -23,12 +23,12 @@ showtext_auto()
 ```
 
 ```{r prep-data}
-lemurs_unique <- lemurs %>% distinct(dlc_id, .keep_all = T) 
+lemurs_unique <- lemurs %>% distinct(dlc_id, .keep_all = T) # dlc_id identifies a single lemur
 
 lemurs_clean <- lemurs_unique %>% 
   select(dlc_id, sex, birth_type, age_at_death_y) %>% 
   drop_na(age_at_death_y) %>% 
-  filter(birth_type %in% c("CB", "WB"),
+  filter(birth_type %in% c("CB", "WB"), # removed lemurs with non-defined birth-place
          sex %in% c("M", "F")) %>% 
   mutate(sex = case_when(
            sex == "M" ~ "Male",
@@ -43,6 +43,32 @@ lemurs_clean$label = factor(lemurs_clean$label, levels = c("Male born\nin captiv
                                                            "Female born\nin captivity",
                                                            "Male born\nin the wild",
                                                            "Female born\nin the wild"))
+```
+
+```{r plot}
+
+theme_set(theme_minimal(base_family = "fred")) 
+
+theme_update(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        axis.text.x = element_text(margin = margin(b = 10),
+                                   size = rel(2)),
+        axis.text.y = element_text(color = c("#A9C445",
+                               "#6F8C2C",
+                               "#755857",
+                               "#A0817E"),
+                               size = rel(2),
+                               vjust = -.5,
+                               hjust = 1, 
+                               face = "bold"),
+        axis.title.x = element_markdown(size = rel(1.65)),
+        plot.title = element_markdown(size = rel(2.5), face = "bold", hjust = .5,
+                                      margin = margin(r = 65, b = 20)),
+        plot.caption = element_markdown(size = rel(1.25)),
+        plot.margin = margin(25, 15, 25, 15),
+        plot.background = element_rect(fill = "grey90"))
 
 lemurs_clean %>% 
   ggplot(aes(age_at_death_y, label, fill = label)) +
@@ -113,35 +139,19 @@ lemurs_clean %>%
   labs(x = "**Age at death**", 
        y = "",
        title = "Life expectancy of lemurs at the Duke Lemur Center (Durham, NC)",
-       caption = "Data: Kaggle &bull; TidyTuesday 2021/35") +
-  theme_minimal(base_family = "fred") +
-  theme(legend.position = "none",
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        axis.text.x = element_text(margin = margin(b = 10),
-                                   size = rel(2)),
-        axis.text.y = element_text(color = c("#A9C445",
-                               "#6F8C2C",
-                               "#755857",
-                               "#A0817E"),
-                               size = rel(2),
-                               vjust = -.5,
-                               hjust = 1, 
-                               face = "bold"),
-        axis.title.x = element_markdown(size = rel(1.65)),
-        plot.title = element_markdown(size = rel(2.5), face = "bold", hjust = .5,
-                                      margin = margin(r = 65, b = 20)),
-        plot.caption = element_markdown(size = rel(1.25)),
-        plot.margin = margin(25, 15, 25, 15),
-        plot.background = element_rect(fill = "grey90"))
+       caption = "Data: Kaggle &bull; TidyTuesday 2021/35")
 
 
+
+# Saving and exporting 
 path <- here::here("plots", "2021_35", "2021_Lemurs")
 ggsave(filename = glue::glue("{path}.pdf"), width = 14, height = 10, device = cairo_pdf)
 pdftools::pdf_convert(pdf = glue::glue("{path}.pdf"),
                       filenames = glue::glue("{path}.png"),
                       format = "png", dpi = 300)
+
+
+
 
 ```
 
