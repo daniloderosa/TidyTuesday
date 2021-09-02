@@ -117,6 +117,7 @@ lemurs_clean %>%
   theme_minimal(base_family = "fred") +
   theme(legend.position = "none",
         panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         axis.text.x = element_text(margin = margin(b = 10),
                                    size = rel(2)),
@@ -138,7 +139,7 @@ lemurs_clean %>%
 
 path <- here::here("plots", "2021_35", "2021_Lemurs")
 ggsave(filename = glue::glue("{path}.pdf"), width = 14, height = 10, device = cairo_pdf)
-pdftools::pdf_convert(pdf = glue::glue("{path}.pdf"), 
+pdftools::pdf_convert(pdf = glue::glue("{path}.pdf"),
                       filenames = glue::glue("{path}.png"),
                       format = "png", dpi = 300)
 
