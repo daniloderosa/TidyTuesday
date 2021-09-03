@@ -14,6 +14,8 @@
 
 Feedback is very welcome via [Twitter](https://twitter.com/DaniloDeRosa96) or [mail](mailto:danilo.derosa.dd@gmail.com).
 
+This repository, its layout and its content is heavily inspired by [Cédric Sherer's work](https://github.com/z3tt/TidyTuesday). Cédric is a real inspiration and a great teacher (I happen to join one of his online course on ggplot). If my work in R is the way it is, that's Cédric's merit. 
+
 ***
 
 ### 2021/35 [(code)](https://github.com/daniloderosa/TidyTuesday/blob/main/R/2021_35.Rmd)&nbsp;🐒 Lemurs by [Kaggle](https://www.nature.com/articles/sdata201419)
