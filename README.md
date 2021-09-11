@@ -18,6 +18,12 @@ This repository, its layout and its content are heavily inspired by [Cédric She
 
 ***
 
+### 2021/37 [(code)](https://github.com/daniloderosa/TidyTuesday/blob/main/R/2021_37.Rmd)&nbsp;🏎 Formula 1 Races by [Ergast](https://ergast.com/mrd/db/)
+
+![./plots/2021_37//2021_Formula1.png](https://raw.githubusercontent.com/daniloderosa/TidyTuesday/main/plots/2021_37//2021_Formula1.png)
+
+***
+
 ### 2021/35 [(code)](https://github.com/daniloderosa/TidyTuesday/blob/main/R/2021_35.Rmd)&nbsp;🐒 Lemurs by [Kaggle](https://www.nature.com/articles/sdata201419)
 
 ![./plots/2021_35//2021_Lemurs.png](https://raw.githubusercontent.com/daniloderosa/TidyTuesday/main/plots/2021_35//2021_Lemurs.png)
